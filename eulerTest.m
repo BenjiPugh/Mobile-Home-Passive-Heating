@@ -20,7 +20,7 @@ for i = 1:numSteps
     % heat lost in watts (J/s)
     heatLost = heatLoss(energyToTemperature(U(i), massAir, specAir), tOutside);
     % convert W to W h
-    dudt = heatLost*dt*3600
+    dudt = heatLost*dt*3600;
     T(i+1) = T(i) + dt;
     U(i+1) = U(i) + dudt;
 end
