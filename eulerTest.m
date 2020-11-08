@@ -9,18 +9,16 @@ massAir = densAir * volumeAir;  %kg
 t0 = 0;
 tend = 1;      %days
 
-dt = 1/24;
+dt = 1/(24*12)
 
 numSteps = (tend - t0) / dt;
 T = zeros(numSteps + 1, 1);
-
-temperatureToEnergy(tAir, massAir, specAir);
 
 U = zeros(size(T));
 U(1) = temperatureToEnergy(tAir, massAir, specAir);
 for i = 1:numSteps
     T(i+1) = T(i) + dt;
-    U(i+1) = U(i) + heatLoss(energyToTemperature(U(1), massAir, specAir), tOutside)*dt*3600;
+    U(i+1) = U(i) + heatLoss(energyToTemperature(U(1), massAir, specAir), tOutside)*dt*24*60*60;
 end
 
 energyToTemperature(U(numSteps), massAir, specAir)
