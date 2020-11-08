@@ -5,7 +5,7 @@ function rate = heatLoss(indoorT, outdoorT)
     
     %Standard Mid-Sized manufactured home is 14x56x13.5ft or
     %4.27x17.06x4.11m
-    area = 7,387;   %m^2
+    area = 7387;   %m^2
     dUdt = (outdoorT - indoorT) * area / rVal;      %in Watts
-    rate = -dUdt;
+    rate = dUdt;
 end
