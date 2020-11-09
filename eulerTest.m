@@ -27,8 +27,9 @@ for i = 1:numSteps
         airTemperatureK(i));
     % convert W to J
     dudt = heatLost(i)*dt*86400;
+    dsdt = solarRadiation(i) * windowArea * dt *86400;
     T(i+1) = T(i) + dt;
-    U(i+1) = U(i) + dudt + (solarRadiation(i) * windowArea * dt *86400);
+    U(i+1) = U(i) + dudt + dsdt;
 end
 
 energyToTemperature(U(numSteps), massAir, specAir)
