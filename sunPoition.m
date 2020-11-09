@@ -32,10 +32,17 @@ eclipticObliquity = 23.439 - 0.0000004 * julianDate * deg2rad;
 % Celestial coordinates
 
 % Right ascension and declination
-% this is not affecting the whole matrix yet
 num = cos(eclipticObliquity) .* sin(eclipticLongitude);
 den = cos(eclipticLongitude);
 rightAscension = atan(num ./ den);
+% I don't know a good way of doing conditional stuff or how to simplify the
+% expression mathematically. Might look back at this. (sign(a)-1)/-2 could
+% work too. Should have looked for that first.
+% numNegative = (abs(num)-num)./num/-2;
+% denNegative = (abs(den)-den)./den/-2;
+% Use masks to apply coniditionally
+% rightAscension = rightAscension + (numNegative * pi);
+% rightAscension = rightAscension + ((denNegative .* ~numNegative) * twoPi);
 %     ra[den < 0] <- ra[den < 0] + pi
 %     ra[den >= 0 & num < 0] <- ra[den >= 0 & num < 0] + twopi
 declination = asin(sin(eclipticObliquity) .* sin(eclipticLongitude));
