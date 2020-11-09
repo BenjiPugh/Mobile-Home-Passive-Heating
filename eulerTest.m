@@ -27,8 +27,8 @@ end
 
 energyToTemperature(U(numSteps), massAir, specAir)
 
-Data = energyToTemperature(U, massAir, specAir);
-plot(T, Data)
+data = energyToTemperature(U, massAir, specAir);
+plot(T, data)
 
 
     
