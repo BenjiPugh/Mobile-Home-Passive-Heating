@@ -3,7 +3,7 @@ load weather.mat
 tAir = 294;
 tOutside = airTemperatureK(1);
 specAir = 1006;     %Joules/(kg*K)
-windowArea = 4;     %m^2
+windowArea = 1;     %m^2
 
 densAir = 1.225;    %kg / m^3
 volumeAir = 299;    %m^3 Standard volume of midsized manufactured home (4.27x17.06x4.11)
@@ -28,7 +28,7 @@ for i = 1:numSteps
     % convert W to J
     dudt = heatLost(i)*dt*86400;
     T(i+1) = T(i) + dt;
-    U(i+1) = U(i) + dudt + (solarRadiation(i) * windowArea);
+    U(i+1) = U(i) + dudt + (solarRadiation(i) * windowArea * dt *86400);
 end
 
 energyToTemperature(U(numSteps), massAir, specAir)
