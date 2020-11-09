@@ -10,7 +10,7 @@ volumeAir = 299;    %m^3 Standard volume of midsized manufactured home (4.27x17.
 massAir = densAir * volumeAir;  %kg
 
 t0 = 0;
-tend = 1;      %days
+tend = 365;      %days
 
 dt = 1/(24*12);
 
