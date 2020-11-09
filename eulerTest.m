@@ -16,11 +16,13 @@ T = zeros(numSteps + 1, 1);
 
 U = zeros(size(T));
 U(1) = temperatureToEnergy(tAir, massAir, specAir);
+
+heatLost = NaN(numSteps + 1,1);
 for i = 1:numSteps
     % heat lost in watts (J/s)
-    heatLost = heatLoss(energyToTemperature(U(i), massAir, specAir), tOutside);
-    % convert W to W d
-    dudt = heatLost*dt*86400;
+    heatLost(i) = heatLoss(energyToTemperature(U(i), massAir, specAir), tOutside);
+    % convert W to J
+    dudt = heatLost(i)*dt*86400;
     T(i+1) = T(i) + dt;
     U(i+1) = U(i) + dudt;
 end
