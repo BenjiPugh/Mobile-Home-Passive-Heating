@@ -1,16 +1,16 @@
-function sunPoition(lat, long, date, time)
+function sunPoition()
 
-twoPi = 2 * pi
-deg2rad = pi / 180
+twoPi = 2 * pi;
+deg2rad = pi / 180;
  
 % All the days we wan't to compute this for. I've hardcoded it for 2019,
 % but it would be easy to make this work for all years.
-timeInterval = [1:365*24*12];
+timeInterval = [1:1/288:365];
 
 % Convert to Julian date then almanac input. The offset is for the
 % beginning of 2019. Our first observation is five minutes later. Each five
 % minute interval is 1/288 days.
-julianDate = timeInterval/288 + 6939.50000;  
+julianDate = timeInterval + 6939.50000;  
     
 %Don't have to worry about negatives after 2000.
 
@@ -26,17 +26,19 @@ meanAnomaly = mod((357.528 + .9856003 * julianDate), 360) * deg2rad;
 eclipticLongitude = meanLongitude + 1.915 * sin(meanAnomaly)...
     + 0.020 * sin(2 * meanAnomaly);
 eclipticLongitude = mod(eclipticLongitude, 360) * deg2rad;
+% this is almost meaningless
 eclipticObliquity = 23.439 - 0.0000004 * julianDate * deg2rad;
 
 % Celestial coordinates
 
 % Right ascension and declination
-num = cos(eclipticObliquity) * sin(eclipticLongitude);
+% this is not affecting the whole matrix yet
+num = cos(eclipticObliquity) .* sin(eclipticLongitude);
 den = cos(eclipticLongitude);
-rightAscension = atan(num / den);
+rightAscension = atan(num ./ den);
 %     ra[den < 0] <- ra[den < 0] + pi
 %     ra[den >= 0 & num < 0] <- ra[den >= 0 & num < 0] + twopi
-declination = asin(sin(eclipticObliquity) * sin(eclipticLongitude));
+declination = asin(sin(eclipticObliquity) .* sin(eclipticLongitude));
  
 % Local coordinates
 
