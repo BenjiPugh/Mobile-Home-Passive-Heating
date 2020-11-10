@@ -1,5 +1,7 @@
 load weather.mat
 
+windowFixed = 1;      % are windows kept open;
+
 tAir = 294;
 tOutside = airTemperatureK(1);
 
@@ -53,8 +55,11 @@ for i = 1:numSteps
     dfdt = floorConvection(i) * dt * 86400;
     dcdt = floorLost(i) * dt * 86400;
     T(i+1) = T(i) + dt;
+    % if windows stay open
+    if windowFixed
+        windowOpen(i+1) = 1;
     % close windows if it's already hot
-    if (((insideT(i) > 296) | (airTemperatureK(i) > 294))...
+    elseif (((insideT(i) > 296) | (airTemperatureK(i) > 294))...
             & (windowOpen(i) == 1))
         windowOpen(i+1) = 0;
         bangCount(i+1) = bangCount(i) + 1;
