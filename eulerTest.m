@@ -4,7 +4,7 @@ tAir = 294;
 tOutside = airTemperatureK(1);
 specAir = 1006;     % J / (kg*K)
 specFloor = 960;    % J / (kg*K)
-windowArea = 4;     % m^2
+windowArea = 16;     % m^2
 
 densAir = 1.225;    % kg / m^3
 volumeAir = 299;    % m^3 Standard volume of midsized manufactured home
@@ -21,31 +21,50 @@ dt = 1/(24*12);     % our dataset has readings every five minutes
 numSteps = (tend - t0) / dt; % how many time steps we are simulating
 T = zeros(numSteps, 1); % matrix of timesteps. important for plotting
 
+bangCount = 0;
+windowOpen = NaN(numSteps,1);
+windowOpen(1) = 1;
+
 U = zeros(size(T)); % air energies
 U(1) = temperatureToEnergy(tAir, massAir, specAir);
+insideT = zeros(size(T)); % air temperatures
 F = zeros(size(T)); % floor energies
 F(1) = temperatureToEnergy(tAir, massFloor, specFloor);
+floorT = zeros(size(T)); % floor temperatures
 
 heatLost = NaN(numSteps,1); % heat through walls (for plotting)
+floorLost = NaN(numSteps,1); % heat through walls (for plotting)
 floorConvection = NaN(numSteps,1); % heat from floor (for plotting)
-for i = 1:numSteps - 1
+for i = 1:numSteps
     % temperatures of floor
-    floorT = energyToTemperature(F(i), massFloor, specFloor);
+    floorT(i) = energyToTemperature(F(i), massFloor, specFloor);
     % temperature inside
-    insideT = energyToTemperature(U(i), massAir, specAir);
+    insideT(i) = energyToTemperature(U(i), massAir, specAir);
     % heat through walls in watts (J/s)
-    heatLost(i) = heatLoss(insideT, airTemperatureK(i));
+    heatLost(i) = heatLoss(insideT(i), airTemperatureK(i));
+    floorLost(i) = heatLoss(floorT(i), airTemperatureK(i));
     % heat to air in watts
-    floorConvection(i) = floorToAir(floorT, insideT);
+    floorConvection(i) = floorToAir(floorT(i), insideT(i));
     % convert W to J
     dudt = heatLost(i) * dt * 86400;
     dsdt = solarRadiation(i) * windowArea * dt * 86400;
     dfdt = floorConvection(i) * dt * 86400;
+    dcdt = floorLost(i) * dt * 86400;
     T(i+1) = T(i) + dt;
+    % close windows if it's already hot
+    if ((insideT(i) > 296) | (airTemperatureK(i) > 294))
+        windowOpen(i+1) = 0;
+        bangCount = bangCount + 1;
+    % if it's cold open the windows
+    elseif ((insideT(i) < 294) & (airTemperatureK(i) < 295))
+        windowOpen(i+1) = 1;
+        bangCount = bangCount + 1;
+    else
+        windowOpen(i+1) = windowOpen(i);
+    end
+    
     U(i+1) = U(i) + dudt + dfdt;
-    F(i+1) = F(i) + dsdt;
+    F(i+1) = F(i) + (dsdt*windowOpen(i)) - dfdt + dcdt;  
 end
 
-data = energyToTemperature(U, massAir, specAir);
-clf; hold on;
-plot(T, data - airTemperatureK)
+% data = energyToTemperature(U, massAir, specAir);
