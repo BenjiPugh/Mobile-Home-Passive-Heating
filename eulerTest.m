@@ -2,9 +2,10 @@ load weather.mat
 
 tAir = 294;
 tOutside = airTemperatureK(1);
+
 specAir = 1006;     % J / (kg*K)
 specFloor = 960;    % J / (kg*K)
-windowArea = 16;     % m^2
+windowArea = 34;    % m^2
 
 densAir = 1.225;    % kg / m^3
 volumeAir = 299;    % m^3 Standard volume of midsized manufactured home
@@ -77,5 +78,6 @@ insideT(i+1) = insideT(i);
 heatLost(i+1) = heatLost(i);
 floorLost(i+1) = floorLost(i);
 floorConvection(i+1) = floorConvection(i);
+airTemperatureK(i+1) = airTemperatureK(i);
 
 % data = energyToTemperature(U, massAir, specAir);
