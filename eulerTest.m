@@ -1,10 +1,13 @@
 load weather.mat
 
+windowFixed = 1;      % are windows kept open;
+
 tAir = 294;
 tOutside = airTemperatureK(1);
+
 specAir = 1006;     % J / (kg*K)
 specFloor = 960;    % J / (kg*K)
-windowArea = 16;     % m^2
+windowArea = 34;    % m^2
 
 densAir = 1.225;    % kg / m^3
 volumeAir = 299;    % m^3 Standard volume of midsized manufactured home
@@ -52,8 +55,11 @@ for i = 1:numSteps
     dfdt = floorConvection(i) * dt * 86400;
     dcdt = floorLost(i) * dt * 86400;
     T(i+1) = T(i) + dt;
+    % if windows stay open
+    if windowFixed
+        windowOpen(i+1) = 1;
     % close windows if it's already hot
-    if (((insideT(i) > 296) | (airTemperatureK(i) > 294))...
+    elseif (((insideT(i) > 296) | (airTemperatureK(i) > 294))...
             & (windowOpen(i) == 1))
         windowOpen(i+1) = 0;
         bangCount(i+1) = bangCount(i) + 1;
@@ -77,5 +83,6 @@ insideT(i+1) = insideT(i);
 heatLost(i+1) = heatLost(i);
 floorLost(i+1) = floorLost(i);
 floorConvection(i+1) = floorConvection(i);
+airTemperatureK(i+1) = airTemperatureK(i);
 
 % data = energyToTemperature(U, massAir, specAir);
