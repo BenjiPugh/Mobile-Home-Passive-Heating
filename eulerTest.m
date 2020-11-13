@@ -1,11 +1,15 @@
+function [cost,temp] = eulerTest(windows)
+
 load weather.mat
 
 windowFixed = 0;        % are windows kept open;
 heatingDisabled = 0;    % are we using active heating?
 coolingDisabled = 0;    % are we using active cooling?
 
-coolingEff = 3.513;        % ERR converted to W/W ratio (12 * 0.293)
-costWatt = 0.0001491;           % electricity cost in dollars/watt
+heatingPower = 5600;    % furnace power in watts
+coolingPower = 1500;    % air conditioning power in watts
+coolingEff = 3.513;     % ERR converted to W/W ratio (12 * 0.293)
+costWatt = 6.09444e-8;   % electricity cost in dollars/watt
 
 
 tAir = 294;
@@ -13,7 +17,7 @@ tOutside = airTemperatureK(1);
 
 specAir = 1006;     % J / (kg*K)
 specFloor = 960;    % J / (kg*K)
-windowArea = 34;    % m^2
+windowArea = windows;% m^2
 
 densAir = 1.225;    % kg / m^3
 volumeAir = 299;    % m^3 Standard volume of midsized manufactured home
@@ -44,6 +48,10 @@ bangCountCool = NaN(numSteps + 1,1);
 bangCountCool(1) = 0;
 coolingOn = NaN(numSteps + 1,1);
 coolingOn(1) = 0;
+heatingWatts = NaN(numSteps + 1,1);
+heatingWatts(1) = 0;
+coolingWatts = NaN(numSteps + 1,1);
+coolingWatts(1) = 0;
 
 U = zeros(size(T)); % air energies
 U(1) = temperatureToEnergy(tAir, massAir, specAir);
@@ -66,13 +74,18 @@ for i = 1:numSteps
     floorLost(i) = heatLoss(floorT(i), airTemperatureK(i));
     % heat to air in watts
     floorConvection(i) = floorToAir(floorT(i), insideT(i));
+    % how much we heat or cool in watts
+    heatingWatts(i) = (heatingOn(i)*heatingPower);
+    coolingWatts(i) = (coolingOn(i)*coolingPower*coolingEff); 
+     
     % convert W to J
     dudt = heatLost(i) * dt * 86400;
     dsdt = solarRadiation(i) * windowArea * dt * 86400;
     dfdt = floorConvection(i) * dt * 86400;
     dcdt = floorLost(i) * dt * 86400;
-    dpdt = (heatingOn(i)*10000 + 1000*coolingOn(i))*costWatt*86400*dt;  %heating/cooling price
-    dmdt = heatingOn(i)*10000 - 1000*coolingOn(i)*coolingEff;           %heating and cooling impact
+    dpdt = (heatingWatts(i) + (coolingWatts(i) / coolingEff))...
+        * costWatt * 86400 * dt;
+    dmdt = (heatingWatts(i) - coolingWatts(i)) * 86400 * dt;
     
     T(i+1) = T(i) + dt;
     % if windows stay open
@@ -95,13 +108,19 @@ for i = 1:numSteps
     
     %don't do heating if it's disabled
     if heatingDisabled
-        
-    elseif ((airTemperatureK(i) > 293) & heatingOn(i))
+        heatingOn(i+1) = 0;
+    elseif ((insideT(i) > 293.5) & (heatingOn(i) ~= 0))
         heatingOn(i+1) = 0;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
-        
-    elseif ((airTemperatureK(i) < 293) & heatingOn(i))
+    elseif ((insideT(i) < 290) & (airTemperatureK(i) < 285)...
+            & (heatingOn(i) ~= 1))
         heatingOn(i+1) = 1;
+        bangCountHeat(i+1) = bangCountHeat(i) + 1;
+    elseif ((insideT(i) < 292) & (heatingOn(i) ~= .25))
+        heatingOn(i+1) = .5;
+        bangCountHeat(i+1) = bangCountHeat(i) + 1;
+    elseif ((insideT(i) < 293.5) & (heatingOn(i) ~= .125))
+        heatingOn(i+1) = .125;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
     else
         heatingOn(i+1) = heatingOn(i);
@@ -110,12 +129,14 @@ for i = 1:numSteps
         
     %don't do cooling if it's disabled
     if coolingDisabled
-        
-    elseif (airTemperatureK(i) > 298) & (coolingOn(i) == 0)
-        coolingOn(i+1) = 1;
+        coolingOn(i+1) = 0;
+   elseif (insideT(i) > 297) & (coolingOn(i) ~= .25)
+        coolingOn(i+1) = .25;
         bangCountCool(i+1) = bangCountCool(i) + 1;
-        
-    elseif (airTemperatureK(i) < 298) & (coolingOn(i) == 1)
+    elseif (insideT(i) > 297) & (coolingOn(i) ~= .5)
+        coolingOn(i+1) = .5;
+        bangCountCool(i+1) = bangCountCool(i) + 1;   
+    elseif (insideT(i) < 297) & (coolingOn(i) ~= 0)
         coolingOn(i+1) = 0;
         bangCountCool(i+1) = bangCountCool(i) + 1;
     else
@@ -127,8 +148,8 @@ for i = 1:numSteps
     
     
     U(i+1) = U(i) + dudt + dfdt + dmdt;
-    F(i+1) = F(i) + (dsdt*windowOpen(i)) - dfdt + dcdt;
-    C(i+1) = C(i)+ dpdt;
+    F(i+1) = F(i) + (dsdt*windowOpen(i)) - dfdt;
+    C(i+1) = C(i) + dpdt;
 end
 
 % make same size for plotting
@@ -138,5 +159,10 @@ heatLost(i+1) = heatLost(i);
 floorLost(i+1) = floorLost(i);
 floorConvection(i+1) = floorConvection(i);
 airTemperatureK(i+1) = airTemperatureK(i);
+heatingWatts(i+1) = heatingWatts(i);
+coolingWatts(i+1) = coolingWatts(i);
 
 % data = energyToTemperature(U, massAir, specAir);
+cost = C(i);
+temp = insideT;
+end
