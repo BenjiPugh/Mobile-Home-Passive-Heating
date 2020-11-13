@@ -126,7 +126,7 @@ for i = 1:numSteps
     
     
     
-    U(i+1) = U(i) + dudt + dfdt;
+    U(i+1) = U(i) + dudt + dfdt + dmdt;
     F(i+1) = F(i) + (dsdt*windowOpen(i)) - dfdt + dcdt;
     C(i+1) = C(i)+ dpdt;
 end
