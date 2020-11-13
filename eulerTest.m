@@ -2,12 +2,10 @@ load weather.mat
 
 windowFixed = 0;        % are windows kept open;
 heatingDisabled = 0;    % are we using active heating?
-coolingDisabled = 1;    % are we using active cooling?
+coolingDisabled = 0;    % are we using active cooling?
 
-coolingEff = = 3.513;        % ERR converted to W/W ratio (12 * 0.293)
+coolingEff = 3.513;        % ERR converted to W/W ratio (12 * 0.293)
 costWatt = 0.0001491;           % electricity cost in dollars/watt
-
-heaterWatts
 
 
 tAir = 294;
@@ -44,6 +42,8 @@ heatingOn = NaN(numSteps + 1,1);
 heatingOn(1) = 0;
 bangCountCool = NaN(numSteps + 1,1);
 bangCountCool(1) = 0;
+coolingOn = NaN(numSteps + 1,1);
+coolingOn(1) = 0;
 
 U = zeros(size(T)); % air energies
 U(1) = temperatureToEnergy(tAir, massAir, specAir);
@@ -96,11 +96,11 @@ for i = 1:numSteps
     %don't do heating if it's disabled
     if heatingDisabled
         
-    elseif ((airTemperatureK(i) > 293) & heatingOn(i) = 1)
+    elseif ((airTemperatureK(i) > 293) & heatingOn(i))
         heatingOn(i+1) = 0;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
         
-    elseif ((airTemperatureK(i) < 293) & heatingOn(i) = 0)
+    elseif ((airTemperatureK(i) < 293) & heatingOn(i))
         heatingOn(i+1) = 1;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
     else
@@ -111,11 +111,11 @@ for i = 1:numSteps
     %don't do cooling if it's disabled
     if coolingDisabled
         
-    elseif ((airTemperatureK(i) > 298) & coolingOn(i) = 0)
+    elseif (airTemperatureK(i) > 298) & (coolingOn(i) == 0)
         coolingOn(i+1) = 1;
         bangCountCool(i+1) = bangCountCool(i) + 1;
         
-    elseif (airTemperatureK(i) < 298) & coolingOn(i) = 1)
+    elseif (airTemperatureK(i) < 298) & (coolingOn(i) == 1)
         coolingOn(i+1) = 0;
         bangCountCool(i+1) = bangCountCool(i) + 1;
     else
