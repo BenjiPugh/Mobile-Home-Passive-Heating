@@ -109,17 +109,17 @@ for i = 1:numSteps
     %don't do heating if it's disabled
     if heatingDisabled
         heatingOn(i+1) = 0;
-    elseif ((insideT(i) > 293.5) & (heatingOn(i) ~= 0))
+    elseif ((insideT(i) > 294.5) & (heatingOn(i) ~= 0))
         heatingOn(i+1) = 0;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
-    elseif ((insideT(i) < 290) & (airTemperatureK(i) < 285)...
+    elseif ((insideT(i) < 291) & (airTemperatureK(i) < 285)...
             & (heatingOn(i) ~= 1))
         heatingOn(i+1) = 1;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
-    elseif ((insideT(i) < 292) & (heatingOn(i) ~= .25))
+    elseif ((insideT(i) < 293) & (heatingOn(i) ~= .25))
         heatingOn(i+1) = .5;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
-    elseif ((insideT(i) < 293.5) & (heatingOn(i) ~= .125))
+    elseif ((insideT(i) < 294.5) & (heatingOn(i) ~= .125))
         heatingOn(i+1) = .125;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
     else
