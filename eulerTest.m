@@ -72,7 +72,7 @@ for i = 1:numSteps
     dfdt = floorConvection(i) * dt * 86400;
     dcdt = floorLost(i) * dt * 86400;
     dpdt = (heatingOn(i)*10000 + 1000*coolingOn(i))*costWatt*86400*dt;  %heating/cooling price
-    dmdt = heatingOn(i)*10000 - 1000*coolingOn(i)*coolingEff;           %heating and cooling impact
+    dmdt = (heatingOn(i)*2000 - 1000*coolingOn(i)*coolingEff)*86400*dt;%heating and cooling impact
     
     T(i+1) = T(i) + dt;
     % if windows stay open
@@ -96,11 +96,11 @@ for i = 1:numSteps
     %don't do heating if it's disabled
     if heatingDisabled
         
-    elseif ((airTemperatureK(i) > 293) & heatingOn(i))
+    elseif ((insideT(i) > 293) & heatingOn(i))
         heatingOn(i+1) = 0;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
         
-    elseif ((airTemperatureK(i) < 293) & heatingOn(i))
+    elseif ((insideT(i) < 293) & ~heatingOn(i))
         heatingOn(i+1) = 1;
         bangCountHeat(i+1) = bangCountHeat(i) + 1;
     else
@@ -111,11 +111,11 @@ for i = 1:numSteps
     %don't do cooling if it's disabled
     if coolingDisabled
         
-    elseif (airTemperatureK(i) > 298) & (coolingOn(i) == 0)
+    elseif (insideT(i) > 298) & (coolingOn(i) == 0)
         coolingOn(i+1) = 1;
         bangCountCool(i+1) = bangCountCool(i) + 1;
         
-    elseif (airTemperatureK(i) < 298) & (coolingOn(i) == 1)
+    elseif (insideT(i) < 298) & (coolingOn(i) == 1)
         coolingOn(i+1) = 0;
         bangCountCool(i+1) = bangCountCool(i) + 1;
     else
