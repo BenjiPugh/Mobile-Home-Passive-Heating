@@ -5,4 +5,4 @@ A project using differential equations for Models and Simulation at Olin College
 
 Contributors:
 Benji Pugh
-Van Myers
+Van Meyers
